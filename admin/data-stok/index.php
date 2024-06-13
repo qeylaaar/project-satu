@@ -2,60 +2,36 @@
 session_start();
 
 if (!isset($_SESSION['login'])) {
-    header('Location; ../');
+    header('Location: ../');
     exit;
 }
-require './stok-function.php';
 
-$id = (isset($_GET['id'])) ? $_GET['id'] : null;
+require 'stok-function.php';
+
 $respon = (isset($_GET['response'])) ? $_GET['response'] : null;
-$hapus = (isset($_GET['hapus'])) ? $_GET['hapus'] : null;
-$modal = (isset($_GET['modal'])) ? $_GET['modal'] : null;
 
-
-if ($respon === "deletesuccess") {
-    $respon = "Data stok berhasil dihapus!";
-} elseif ($respon === "deletefalse") {
-    $respon = "Data stok gagal dihapus!";
-} elseif ($respon === "successadd") {
+if ($respon === "successadd") {
     $respon = "Data stok berhasil ditambah!";
 } elseif ($respon === "failadd") {
     $respon = "Data stok gagal ditambah!";
-} elseif ($respon === "imgfail") {
-    $respon = "Anda belum pilih gambar stok!";
-} elseif ($respon === "imgwarning") {
-    $respon = "Yang Anda upload bukan gambar!";
-} elseif ($respon === "imgover") {
-    $respon = "Ukuran gambar terlalu besar!";
-} elseif ($respon === "error") {
-    $respon = "Anda belum pilih kategori!";
+} elseif ($respon === "deletesuccess") {
+    $respon = "Data stok berhasil dihapus!";
+} elseif ($respon === "deletefalse") {
+    $respon = "Data stok gagal dihapus!";
 } elseif ($respon === "updatesuccess") {
-    $respon = "Berhasil ubah data stok!";
+    $respon = "Data stok berhasil diubah!";
 } elseif ($respon === "updatefalse") {
-    $respon = "Gagal ubah data stok!";
+    $respon = "Data stok gagal diubah!";
 }
 
+$stok = query("SELECT * FROM stok");
 
-$stok = query("SELECT * FROM tb_stok");
-
-if ($id != null) {
-    $productId = query("SELECT * FROM tb_stok WHERE id_stok = '$id'")[0];
-}
-
-
-if ($hapus === "true") {
-    if (delete() < 0) {
-        echo "
-			<script>
-				document.location.href = './?response=deletesuccess';
-			</script>
-		";
+if (isset($_GET['hapus'])) {
+    $id = $_GET['hapus'];
+    if (hapusStok($id) > 0) {
+        header("Location: ./?response=deletesuccess");
     } else {
-        echo "
-			<script>
-				document.location.href = './?response=deletefalse';
-			</script>
-		";
+        header("Location: ./?response=deletefalse");
     }
 }
 ?>
@@ -69,7 +45,7 @@ if ($hapus === "true") {
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@300;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
-    <title>Twee Coffee | Admin Dashboard</title>
+    <title>Twee Coffee | Data Stok</title>
 </head>
 
 <body>
@@ -88,8 +64,11 @@ if ($hapus === "true") {
             <div class="sidebar">
                 <ul>
                     <li><a href="../"><span>Dashboard</span></a></li>
+                    <li><a href="../data-produk"><span>Data Produk</span></a></li>
+                    <li><a href="../data-mitra"><span>Data Mitra</span></a></li>
                     <li><a href="./" class="active"><span>Data Stok</span></a></li>
-                    <li><a href="../permintaan-stok"><span>Permintaan Stok</span></a></li>
+                    <li><a href="../pengajuan-stok"><span>Pengajuan Stok</span></a></li>
+                    <li><a href="../data-laporan"><span>Laporan</span></a></li>
                     <li><a href="../../auth/logout"><span>Logout</span></a></li>
                 </ul>
             </div>
@@ -104,27 +83,21 @@ if ($hapus === "true") {
                 <table>
                     <tr>
                         <th>Nama Produk</th>
-                        <th>Deskripsi Product</th>
-                        <th>Gambar Produk</th>
-                        <th>Harga Produk</th>
-                        <th>Stok Produk</th>
+                        <th>Sisa Stok</th>
                         <th>Aksi</th>
                     </tr>
-                    <?php foreach ($stok as $stock) : ?>
+                    <?php foreach ($stok as $item) : ?>
                         <tr>
-                            <td><?= $stock['nama_produk'] ?></td>
-                            <td><?= $stock['desc_stok'] ?></td>
-                            <td><img src="../../img/<?= $stock['thumbnail_stok'] ?>" style="width: 100px;"></td>
-                            <td><?= number_format($stock['harga_produk'], 0, ',', '.') ?></td>
-                            <td><?= $stock['stok_produk'] ?></td>
+                            <td><?= $item['product'] ?></td>
+                            <td><?= $item['sisa_stok'] ?></td>
                             <td>
-                                <a href="./update-stok?id=<?= $stock['id_stok'] ?>">edit</i></a>
-                                <a href="./hapus-stok?id=<?= $stock['id_stok']; ?>">Hapus</a>
+                                <a href="./edit-stok?id=<?= $item['id'] ?>">Edit</a> |
+                                <a href="./?hapus=<?= $item['id'] ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 </table>
-                <?php if ($stok === []) : ?>
+                <?php if (empty($stok)) : ?>
                     <h3>Data Kosong</h3>
                 <?php endif; ?>
             </div>

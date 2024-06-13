@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <div class="uwucontainer">
+    <div class="container">
         <div class="header">
             <div class="header-logo">
                 <span class="site-title">Twee Coffee</span>
@@ -29,14 +29,14 @@
                     <li><a href="./" class="active"><span>Dashboard</span></a></li>
                     <li><a href="./data-produk"><span>Data Produk</span></a></li>
                     <li><a href="./data-mitra"><span>Data Mitra</span></a></li>
-                    <li><a href="./data-mitra"><span>Data Stok</span></a></li>
+                    <li><a href="./data-stok"><span>Data Stok</span></a></li>
                     <li><a href="./pengajuan-stok"><span>Pengajuan Stok</span></a></li>
                     <li><a href="./data-laporan"><span>Laporan</span></a></li>
                     <li><a href="../auth/logout"><span>Logout</span></a></li>
                 </ul>
             </div>
             <div class="page-content">
-                <h1>hi Admin</h1>
+                <h1>Hi Admin</h1>
             </div>
         </div>
     </div>

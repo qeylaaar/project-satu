@@ -56,6 +56,8 @@ if (isset($_POST['tampilkan'])) {
                     <li><a href="../"><span>Dashboard</span></a></li>
                     <li><a href="../data-produk"><span>Data Produk</span></a></li>
                     <li><a href="../data-mitra"><span>Data Mitra</span></a></li>
+                    <li><a href="../data-stok"><span>Data Stok</span></a></li>
+                    <li><a href="../pengajuan-stok"><span>Pengajuan Stok</span></a></li>
                     <li><a href="./" class="active"><span>Laporan</span></a></li>
                     <li><a href="../../auth/logout"><span>Logout</span></a></li>
                 </ul>

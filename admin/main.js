@@ -52,3 +52,38 @@ setInterval(showTime, 500);
 $(document).ready(function () {
   $("#tabel-data").DataTable();
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('addStockForm');
+  const stockTable = document.getElementById('stockTable');
+
+  form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const formData = new FormData(form);
+      
+      fetch('api.php', {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+          alert(data);
+          loadStockData();
+      });
+  });
+
+  function loadStockData() {
+      fetch('api.php')
+      .then(response => response.json())
+      .then(data => {
+          let tableContent = '<table><tr><th>Produk</th><th>Sisa Stok</th></tr>';
+          data.forEach(stock => {
+              tableContent += `<tr><td>${stock.product}</td><td>${stock.sisa_stok}</td></tr>`;
+          });
+          tableContent += '</table>';
+          stockTable.innerHTML = tableContent;
+      });
+  }
+
+  loadStockData();
+});

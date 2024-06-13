@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => 'f47bb758415c5fc36895416cb46e1b2efc30b04f',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '75e9cb85778493a3ef1e5e66ea3ae2d448421df8',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,11 +11,20 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => 'f47bb758415c5fc36895416cb46e1b2efc30b04f',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '75e9cb85778493a3ef1e5e66ea3ae2d448421df8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'midtrans/midtrans-php' => array(
+            'pretty_version' => '2.5.2',
+            'version' => '2.5.2.0',
+            'reference' => 'a1ad0c824449ca8c68c4cf11b3417ad518311d2b',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../midtrans/midtrans-php',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
