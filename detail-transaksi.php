@@ -4,31 +4,41 @@ session_start();
 require './database/koneksi.php';
 require './controller/transaksiController.php';
 
-// url get
+// Pastikan user telah login
+if (!isset($_SESSION['login'])) {
+    header("Location: ./auth/login");
+    exit;
+}
+
+$user_id = $_SESSION['dataUser']['user_id'];
+$fullname = $_SESSION['dataUser']['fullname'];
+
+// URL parameter untuk respons
 $response = (isset($_GET['r'])) ? $_GET['r'] : null;
 
+// Pesan respons berdasarkan URL parameter
 if ($response === "success") {
-    $response = "Bukti pembayaran berhasil dikirim, terimakasih";
+    $response_msg = "Bukti pembayaran berhasil dikirim, terimakasih";
 } elseif ($response === "false") {
-    $response = "Maaf, bukti pembayaran gagal dikirim";
-}
-if (isset($_SESSION['login'])) {
-    $user_id = $_SESSION['dataUser']['user_id'];
-    $fullname = $_SESSION['dataUser']['fullname'];
+    $response_msg = "Maaf, bukti pembayaran gagal dikirim";
 }
 
+// Definisikan $response_msg jika belum ada
+$response_msg = isset($response_msg) ? $response_msg : null;
+
+// Ambil transaksi berdasarkan user_id
 $myTransaksi = getTransaksiByUserId($user_id);
+
+// Proses konfirmasi pembayaran
 if (isset($_POST['konfirmasi-pembayaran'])) {
     if (konfirmPayment($_POST) > 0) {
-        echo "
-                <script>
-                    document.location.href = './detail-transaksi?r=success';
-                </script>
-            ";
+        // Redirect dengan parameter respons success
+        header("Location: ./detail-transaksi?r=success");
+        exit;
     } else {
-        echo "<script>
-                    document.location.href = './detail-transaksi?r=false';
-                </script>";
+        // Redirect dengan parameter respons false
+        header("Location: ./detail-transaksi?r=false");
+        exit;
     }
 }
 ?>
@@ -36,7 +46,6 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
 <html lang="en">
 
 <head>
-
     <!-- meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -45,16 +54,12 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
     <title>Twee Coffee</title>
 
     <!-- css -->
-
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.25/datatables.min.css" />
-
-
-
 </head>
 
 <body id="home">
@@ -86,16 +91,15 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12">
-                <?php if ($response) : ?>
+                <?php if ($response_msg) : ?>
                     <div class="alert alert-costum mt-2 alert-dismissible fade show" id="success" style="background-color: #4a1667; color: white;" role="alert" data-aos="fade-left" data-aos-delay="500">
-                        <strong><?= $response ?></strong>
+                        <strong><?= $response_msg ?></strong>
                         <button type="button" class="close" id="close-alert">
                             <a href="./detail-transaksi"><i class="fas fa-times"></i></a>
                         </button>
                     </div>
                 <?php endif; ?>
                 <table id="tabel-data" class="table table-striped table-bordered text-center" width="100%" cellspacing="0">
-                    <h4>Detail Transaksi</h4>
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -112,35 +116,33 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
                     </thead>
                     <tbody>
                         <?php $total = 0; ?>
-                        <?php foreach ($myTransaksi as $myTransaksi) : ?>
+                        <?php foreach ($myTransaksi as $transaksi) : ?>
                             <tr>
-                                <td><?= $myTransaksi['product_name'] ?></td>
-                                <td>Rp.<?= number_format($myTransaksi['product_price'], 0, ',', '.') ?></td>
-                                <td><?= $myTransaksi['qty'] ?></td>
+                                <td><?= $transaksi['product_name'] ?></td>
+                                <td>Rp. <?= number_format($transaksi['product_price'], 0, ',', '.') ?></td>
+                                <td><?= $transaksi['qty'] ?></td>
                                 <?php
-                                $sub_total = intval($myTransaksi['product_price']) * intval($myTransaksi['qty']);
-                                $sub_total2 = number_format($sub_total, 0, ',', '.');
+                                $sub_total = intval($transaksi['product_price']) * intval($transaksi['qty']);
                                 ?>
-                                <td>Rp.<?= $sub_total2 ?></td>
-                                <td><?= $myTransaksi['fullname'] ?></td>
-                                <td><?= $myTransaksi['transaksi_alamat'] ?></td>
-                                <?php if ($myTransaksi['status_pembayaran'] === "2") { ?>
+                                <td>Rp. <?= number_format($sub_total, 0, ',', '.') ?></td>
+                                <td><?= $transaksi['fullname'] ?></td>
+                                <td><?= $transaksi['transaksi_alamat'] ?></td>
+                                <?php if ($transaksi['status_pembayaran'] == 2) { ?>
                                     <td>Belum dibayar</td>
                                 <?php } else { ?>
                                     <td>Selesai dibayar</td>
                                 <?php } ?>
-                                <td><?= $myTransaksi['tanggal_transaksi'] ?></td>
-                                <td><?= $myTransaksi['no_bank'] ?></td>
-                                <?php if ($myTransaksi['status_pembayaran'] === "2") { ?>
+                                <td><?= $transaksi['tanggal_transaksi'] ?></td>
+                                <td><?= $transaksi['no_bank'] ?></td>
+                                <?php if ($transaksi['status_pembayaran'] == 2) { ?>
                                     <td>
-                                        <p data-toggle="modal" data-target="#exampleModal" data-total_price="<?= $total ?>" id="konfirmasi_pembayaran" data-qty="<?= $myTransaksi['qty'] ?>" data-product_id="<?= $myTransaksi['product_id'] ?>" data-transaksi_id="<?= $myTransaksi['transaksi_id'] ?>"><i class="fas fa-money-bill-wave-alt"></i></p>
+                                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" data-transaksi_id="<?= $transaksi['transaksi_id'] ?>" data-product_id="<?= $transaksi['product_id'] ?>" data-qty="<?= $transaksi['qty'] ?>">Konfirmasi Pembayaran</button>
                                     </td>
                                 <?php } else { ?>
                                     <td></td>
                                 <?php } ?>
                             </tr>
-
-                            <?php $total += intval($sub_total); ?>
+                            <?php $total += $sub_total; ?>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -163,14 +165,9 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
                                 <input type="hidden" name="qty" id="qty">
                                 <input type="hidden" name="product_id" id="product_id">
                                 <input type="hidden" name="total_harga" id="total_harga">
-                                <div class="input-group mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">Bukti Pembayaran</span>
-                                    </div>
-                                    <div class="custom-file">
-                                        <input type="file" name="gambar" class="custom-file-input" id="inputGroupFile01">
-                                        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="gambar">Bukti Pembayaran</label>
+                                    <input type="file" class="form-control-file" id="gambar" name="gambar">
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -183,13 +180,11 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
             </div>
         </div>
     </div>
-    </div>
     <!-- mycart end -->
 
     <!-- footer -->
     <section class="footer bg-dark" id="contact">
         <div class="footer-content">
-
             <div class="row">
                 <div class="col-md-5 my-3 mx-auto" data-aos="fade-in">
                     <h4 class="text-light text-poppins font-weight-bold">Useful Links</h4>
@@ -208,7 +203,7 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
             <div class="row">
                 <div class="col">
                     <div class="d-flex justify-content-center align-items-center text-center flex-column mx-auto">
-                        <span class="d-block text-light">© Copyright <strong>2021</strong>. All Right Reserved</span>
+                        <span class="d-block text-light">&copy; Copyright <strong>2021</strong>. All Right Reserved</span>
                     </div>
                 </div>
             </div>
@@ -218,9 +213,7 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
 
     <!-- javascript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-
     <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.min.js"></script>
@@ -231,17 +224,16 @@ if (isset($_POST['konfirmasi-pembayaran'])) {
         $(document).ready(function() {
             $('#tabel-data').DataTable();
 
-            $("#konfirmasi_pembayaran").click(function(e) {
-                e.preventDefault();
-                let transaksi_id = $(this).data('transaksi_id');
-                let qty = $(this).data('qty');
-                let product_id = $(this).data('product_id');
+            $('#exampleModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var transaksi_id = button.data('transaksi_id');
+                var product_id = button.data('product_id');
+                var qty = button.data('qty');
 
-                $('#transaksi_id').val(transaksi_id)
-
-                $('#qty').val(qty)
-                $('#product_id').val(product_id)
-
+                var modal = $(this);
+                modal.find('.modal-body #transaksi_id').val(transaksi_id);
+                modal.find('.modal-body #product_id').val(product_id);
+                modal.find('.modal-body #qty').val(qty);
             });
         });
     </script>

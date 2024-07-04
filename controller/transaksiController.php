@@ -53,7 +53,12 @@ function addTransaksi($data)
 function getTransaksiByUserId($id)
 {
     global $conn;
-    $sql = "SELECT * FROM tb_transaksi INNER JOIN tb_user ON tb_transaksi.user_id = tb_user.user_id INNER JOIN tb_bank ON tb_transaksi.bank_id = tb_bank.bank_id INNER JOIN tb_keranjang ON tb_transaksi.keranjang_grup = tb_keranjang.keranjang_id INNER JOIN tb_product ON tb_keranjang.product_id = tb_product.product_id";
+    $sql = "SELECT * FROM tb_transaksi 
+            INNER JOIN tb_user ON tb_transaksi.user_id = tb_user.user_id 
+            INNER JOIN tb_bank ON tb_transaksi.bank_id = tb_bank.bank_id 
+            INNER JOIN tb_keranjang ON tb_transaksi.keranjang_grup = tb_keranjang.keranjang_id 
+            INNER JOIN tb_product ON tb_keranjang.product_id = tb_product.product_id
+            WHERE tb_transaksi.user_id = $id"; // Filter berdasarkan user_id
     $result = mysqli_query($conn, $sql);
     $rows = [];
     while ($row = mysqli_fetch_assoc($result)) {
@@ -61,7 +66,6 @@ function getTransaksiByUserId($id)
     }
     return $rows;
 }
-
 
 function konfirmPayment($data)
 {
@@ -89,8 +93,21 @@ function konfirmPayment($data)
         return mysqli_affected_rows($conn);
     }
 }
-
-
+function getLatestTransaksiByUserId($id)
+{
+    global $conn;
+    $sql = "SELECT * FROM tb_transaksi 
+            INNER JOIN tb_user ON tb_transaksi.user_id = tb_user.user_id 
+            INNER JOIN tb_bank ON tb_transaksi.bank_id = tb_bank.bank_id 
+            INNER JOIN tb_keranjang ON tb_transaksi.keranjang_grup = tb_keranjang.keranjang_id 
+            INNER JOIN tb_product ON tb_keranjang.product_id = tb_product.product_id
+            WHERE tb_transaksi.user_id = '$id'
+            ORDER BY tb_transaksi.transaksi_id DESC
+            LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return $row;
+}
 
 function upload()
 {
